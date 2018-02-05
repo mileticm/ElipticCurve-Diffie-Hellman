@@ -18,7 +18,7 @@ namespace ECDH
         static void Main(string[] args)
         {
             KreirajKljučeve();
-            byte[] kripiraniPodaci = IvanSaljePoruku("tajna poruka");
+            byte[] kripiraniPodaci = IvanSaljePoruku("ultra tajna poruka");
             AnaPrimaPoruku(kripiraniPodaci);
             Console.Read();
         }
@@ -40,12 +40,12 @@ namespace ECDH
             using (var ivanAlgoritam = new ECDiffieHellmanCng(ivanKey))
             using (CngKey anaPubKey = CngKey.Import(anaPubKeyBlob, CngKeyBlobFormat.EccPublicBlob))
             {
-                byte[] symmKey = ivanAlgoritam.DeriveKeyMaterial(anaPubKey);
-                Console.WriteLine("Ivan kreira simetrični ključ " + "Anin javni ključ: {0}", Convert.ToBase64String(symmKey));
+                byte[] simKljuč = ivanAlgoritam.DeriveKeyMaterial(anaPubKey);
+                Console.WriteLine("Ivan kreira simetrični ključ s Aninim javnim ključem: {0}", Convert.ToBase64String(simKljuč));
 
                 using (var aes = new AesCryptoServiceProvider())
                 {
-                    aes.Key = symmKey;
+                    aes.Key = simKljuč;
                     aes.GenerateIV();
                     using (ICryptoTransform encryptor = aes.CreateEncryptor())
                     using (MemoryStream ms = new MemoryStream())
@@ -68,7 +68,7 @@ namespace ECDH
 
         private static void AnaPrimaPoruku(byte[] kriptiraniPodaci)
         {
-            Console.WriteLine("Ana prima kriptirane podatke");
+            Console.WriteLine("Ana prima kriptiranu poruku");
             byte[] podaci = null;
 
             var aes = new AesCryptoServiceProvider();
@@ -79,10 +79,10 @@ namespace ECDH
             using (var anaAlgoritam = new ECDiffieHellmanCng(anakey))
             using (CngKey ivanPubKey = CngKey.Import(ivanPubKeyBlob, CngKeyBlobFormat.EccPublicBlob))
             {
-                byte[] symmKey = anaAlgoritam.DeriveKeyMaterial(ivanPubKey);
-                Console.WriteLine("Ana kreira simetrični ključ " + "Ivanov javni ključ: {0}", Convert.ToBase64String(symmKey));
+                byte[] simKljuč = anaAlgoritam.DeriveKeyMaterial(ivanPubKey);
+                Console.WriteLine("Ana kreira simetrični ključ s Ivanovim javnim ključem: {0}", Convert.ToBase64String(simKljuč));
 
-                aes.Key = symmKey;
+                aes.Key = simKljuč;
                 aes.IV = iv;
 
                 using (ICryptoTransform decryptor = aes.CreateDecryptor())
